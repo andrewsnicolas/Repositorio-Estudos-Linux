@@ -23,8 +23,29 @@ awk -F ' ' '!seen[$4]++ {print $4}' acessos.log | head -n 3
 awk -F ' ' '!seen[$4]++ {print $4}' acessos.log | tail -n 2
 
 #Separa os usuários de falha para tratamento
-grep "FALHA" acessos.log | sort -k4 > teste.txt
+grep "FALHA" acessos.log | awk -F ' ' '{print $4}' | sort > falhasLogins.txt
 
+cont=0
+pont = 0
+while read -r linha; do
+	if(($cont==0)); then
+		nome="${linha}"
+		(( pont++ ))
+	else
+		if[["$nome"=="$linha"]]; then
+			(( pont++ ))
+		else
+			echo "$nome: $pont"
+			echo "$nome: $pont" >> classifFalhas.txt
+			nome="${linha}"
+			pont=1
+		fi
+	fi
+	(( cont++ ))
+done < falhasLogins.txt
+
+sort -t': ' -k2 -nr classifFalhas.txt
+sort -t': ' -k2 -nr classifFalhas.txt | head -n 5
 
 awk -F ' ' '{print substr($2, 1, 2)}' acessos.log | sort -k 2 > teste.txt
 
